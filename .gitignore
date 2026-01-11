@@ -1,0 +1,26 @@
+# General
+.DS_Store
+.idea/
+.vscode/
+*.pyc
+__pycache__/
+*.log
+
+# Environments
+.env
+.venv/
+venv/
+env/
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Docker
+docker-compose.override.yml
+
+# Project specific
+instance/
+
+docs-undercover/
