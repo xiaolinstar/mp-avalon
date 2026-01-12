@@ -28,6 +28,7 @@ class CommandParser:
             (r'^/vote\s+(yes|no|赞成|反对)$|^投票\s+(yes|no|赞成|反对)$', CommandType.VOTE),
             (r'^/quest\s+(success|fail|成功|失败)$|^任务\s+(success|fail|成功|失败)$', CommandType.QUEST),
             (r'^/shoot\s+(\d+)$|^刺杀\s+(\d+)$', CommandType.SHOOT),
+            (r'^/profile$|^我的战绩$|^战绩$', CommandType.PROFILE),
             (r'^/help$|^帮助$|^菜单$', CommandType.HELP),
         ]
 

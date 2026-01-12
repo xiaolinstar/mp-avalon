@@ -72,19 +72,21 @@ DATABASE_URL=mysql+pymysql://user:password@localhost/avalon_db
 - [x] MySQL 核心模型定义（User, Room, State, History）。
 - [x] 集成 Redis 缓存一致性 Repository 层。
 - [x] 标准阿瓦隆 FSM 状态机框架（人数分配、阶段校验）。
-- [x] 单元测试环境搭建 (Pytest & Coverage)。
+- [x] 核心游戏流程实现（组队、投票、任务执行、刺杀阶段）。
+- [x] **高阶角色支持**: 莫甘娜 (Morgana)、莫德雷德 (Mordred)、奥伯伦 (Oberon) 的视野逻辑与分配。
+- [x] **Quest 4 特殊规则**: 7 人及以上局第 4 轮需 2 张失败。
+- [x] **个人战绩中心**: 实现 `/profile` 指令，统计胜率及阵营分布。
+- [x] 单元测试与集成测试（覆盖率 > 50%）。
+- [x] 战绩历史统计与归档流程。
+- [x] 房间清理机制（命令行指令：`flask cleanup-rooms`）。
 
 ### 🟡 进行中 (In Progress)
-- [ ] 详细的游戏阶段流转逻辑（组队、投票循环）。
-- [ ] 角色阵营可见性逻辑（梅林看坏人、派西维尔看梅林等）。
-- [ ] 战绩历史统计与归档流程。
+- [ ] 工程健壮性建设：接入 Sentry 监控与 Flask-Migrate 数据库迁移。
+- [ ] 可观测性：引入 TraceID 处理微信 5s 回复限制下的日志追踪。
 
 ### 🔴 待办 (Todo)
-- [ ] 任务局第四局（7人局及以上）需要两次失败才算失败的特殊规则。
-- [ ] 刺杀阶段的特殊身份判定逻辑。
-- [ ] 异步定时器：自动清理 2 小时无活动的房间。
-- [ ] 完整的 5-10 人局集成自动化测试。
-- [ ] Kubernetes (Kustomize) 部署清单。
+- [ ] 异步超时处理：当玩家长时间不投票时自动随机执行。
+- [ ] Kubernetes (Kustomize) 部署清单与 HPA 配置。
 
 ---
 

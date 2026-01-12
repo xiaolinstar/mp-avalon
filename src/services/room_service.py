@@ -78,4 +78,20 @@ class RoomService:
                 return num
         return str(random.randint(1000, 9999)) # Fallback
 
+    def cleanup_stale_rooms(self, hours: int = 2):
+        from datetime import datetime, timedelta
+        threshold = datetime.utcnow() - timedelta(hours=hours)
+        
+        stale_rooms = Room.query.filter(Room.updated_at < threshold).all()
+        count = len(stale_rooms)
+        for room in stale_rooms:
+            # Clear user current_room_id
+            from src.models.sql_models import User
+            User.query.filter_by(current_room_id=room.id).update({"current_room_id": None})
+            room_repo.delete(room)
+            
+        db.session.commit()
+        logger.info(f"Cleaned up {count} stale rooms inactive since {threshold}")
+        return count
+
 room_service = RoomService()

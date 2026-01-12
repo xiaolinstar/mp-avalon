@@ -12,6 +12,7 @@ class CommandType(Enum):
     VOTE = "vote"
     QUEST = "quest"
     SHOOT = "shoot"  # Assassination
+    PROFILE = "profile"
     HELP = "help"
     UNKNOWN = "unknown"
 

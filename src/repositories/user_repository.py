@@ -1,5 +1,6 @@
 from typing import Optional
-from src.app_factory import db, redis_client
+from src import app_factory
+from src.app_factory import db
 from src.models.sql_models import User
 from src.utils.logger import get_logger
 
@@ -19,7 +20,7 @@ class UserRepository:
         user = User.query.filter_by(openid=openid).first()
         return user
 
-    def get_current_room(self, openid: str) -> Optional[Room]:
+    def get_current_room(self, openid: str) -> Optional['Room']:
         user = self.get_by_openid(openid)
         if user and user.current_room_id:
             from src.models.sql_models import Room

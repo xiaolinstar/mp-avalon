@@ -57,24 +57,84 @@ def wechat():
             elif cmd.command_type == CommandType.START_GAME:
                 room = user_repo.get_current_room(openid)
                 if not room:
-                    reply_text = "你当前不在任何房间中，请先创建或加入房间。"
+                    reply_text = "你当前不在任何房间中。"
                 else:
                     from src.services.game_service import game_service
-                    game_service.start_game(room.room_number, openid)
-                    reply_text = f"游戏开始！房间 {room.room_number} 已进入组队阶段。身份已私发（模拟）。"
+                    room = game_service.start_game(room.room_number, openid)
+                    # Get specific info for the owner who started
+                    role_info = game_service.get_player_info(room, openid)
+                    reply_text = f"游戏开始！房间号: {room.room_number}\n\n{role_info}\n\n当前阶段: {room.game_state.phase}\n当前队长: 玩家{room.game_state.leader_idx + 1}"
             
             elif cmd.command_type == CommandType.STATUS:
                 room = user_repo.get_current_room(openid)
                 if not room:
                     reply_text = "你当前不在任何房间中。"
                 else:
-                    players_count = len(room.game_state.players)
+                    from src.services.game_service import game_service
+                    players = room.game_state.players
+                    players_count = len(players)
                     reply_text = f"【房间 {room.room_number} 状态】\n- 状态: {room.status}\n- 阶段: {room.game_state.phase}\n- 玩家人数: {players_count}/10"
+                    
                     if room.status == 'PLAYING':
+                        leader_name = f"玩家{room.game_state.leader_idx + 1}"
                         reply_text += f"\n- 当前轮次: 第 {room.game_state.round_num} 局"
+                        reply_text += f"\n- 连续失败: {room.game_state.vote_track}/5"
+                        reply_text += f"\n- 当前队长: {leader_name}"
+                        
+                        if room.game_state.phase in ['TEAM_VOTE', 'QUEST_PERFORM']:
+                            team_indices = [players.index(p)+1 for p in room.game_state.current_team]
+                            reply_text += f"\n- 当前队伍: {team_indices}"
+                            
+                        # Add role info for the asker
+                        role_info = game_service.get_player_info(room, openid)
+                        reply_text += f"\n\n{role_info}"
+
+            elif cmd.command_type == CommandType.PICK_TEAM:
+                room = user_repo.get_current_room(openid)
+                if not room:
+                    reply_text = "你当前不在任何房间中。"
+                else:
+                    from src.services.game_service import game_service
+                    indices = [int(i) for i in cmd.args]
+                    game_service.pick_team(room.room_number, openid, indices)
+                    reply_text = f"组队成功！请全体玩家对队伍 {indices} 进行投票。\n发送 '/vote yes' 或 '/vote no'。"
+
+            elif cmd.command_type == CommandType.VOTE:
+                room = user_repo.get_current_room(openid)
+                if not room:
+                    reply_text = "你当前不在任何房间中。"
+                else:
+                    from src.services.game_service import game_service
+                    vote = cmd.args[0] if cmd.args else ""
+                    game_service.cast_vote(room.room_number, openid, vote)
+                    reply_text = f"投票成功 ({vote})！请等待其他玩家投票。"
+
+            elif cmd.command_type == CommandType.QUEST:
+                room = user_repo.get_current_room(openid)
+                if not room:
+                    reply_text = "你当前不在任何房间中。"
+                else:
+                    from src.services.game_service import game_service
+                    q_vote = cmd.args[0] if cmd.args else ""
+                    game_service.perform_quest(room.room_number, openid, q_vote)
+                    reply_text = f"任务投票成功 ({q_vote})！请等待结果发布。"
+
+            elif cmd.command_type == CommandType.SHOOT:
+                room = user_repo.get_current_room(openid)
+                if not room:
+                    reply_text = "你当前不在任何房间中。"
+                else:
+                    from src.services.game_service import game_service
+                    target_idx = int(cmd.args[0]) if cmd.args else 0
+                    result_msg = game_service.shoot_player(room.room_number, openid, target_idx)
+                    reply_text = result_msg
+
+            elif cmd.command_type == CommandType.PROFILE:
+                from src.services.game_service import game_service
+                reply_text = game_service.get_user_stats(openid)
 
             elif cmd.command_type == CommandType.HELP:
-                reply_text = "【阿瓦隆指令帮助】\n- 建房: 创建新房间\n- 加入 房间号: 进入房间\n- /start: 开始游戏\n- /status: 查看状态"
+                reply_text = "【阿瓦隆指令帮助】\n- 建房: 创建房间\n- 加入 {房号}: 加入房间\n- /start: 开始游戏\n- /status: 状态查询\n- /profile: 个人战绩\n- /pick 1 2 3: 队长组队\n- /vote yes/no: 组队投票\n- /quest success/fail: 任务执行\n- /shoot {编号}: 刺杀梅林"
             
             else:
                 reply_text = f"收到消息: {content}。发送 '帮助' 查看可用指令。"

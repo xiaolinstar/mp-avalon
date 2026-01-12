@@ -1,5 +1,6 @@
 from typing import Optional
-from src.app_factory import db, redis_client
+from src import app_factory
+from src.app_factory import db
 from src.models.sql_models import Room, GameState
 from src.utils.json_utils import json_dumps, json_loads
 from src.utils.logger import get_logger
@@ -21,7 +22,7 @@ class RoomRepository:
         cache_key = f"{self.CACHE_PREFIX}{room_number}"
         
         # 1. Try Redis Cache
-        cached_data = redis_client.get(cache_key)
+        cached_data = app_factory.redis_client.get(cache_key)
         if cached_data:
             logger.debug(f"Cache HIT for room {room_number}")
             # Note: Complex to reconstruct SQLAlchemy object from simple JSON cache 
@@ -47,12 +48,15 @@ class RoomRepository:
         """
         try:
             # Incremental version handled manually or via SQLAlchemy events
-            room.version += 1
+            if room.version is None:
+                room.version = 1
+            else:
+                room.version += 1
             db.session.add(room)
             db.session.commit()
             
             # Invalidate Redis Cache
-            redis_client.delete(f"{self.CACHE_PREFIX}{room.room_number}")
+            app_factory.redis_client.delete(f"{self.CACHE_PREFIX}{room.room_number}")
             logger.debug(f"Saved room {room.room_number} and invalidated cache")
         except Exception as e:
             db.session.rollback()
@@ -63,7 +67,7 @@ class RoomRepository:
         room_number = room.room_number
         db.session.delete(room)
         db.session.commit()
-        redis_client.delete(f"{self.CACHE_PREFIX}{room_number}")
+        app_factory.redis_client.delete(f"{self.CACHE_PREFIX}{room_number}")
 
     def update_game_state(self, game_state: GameState) -> None:
         """
@@ -74,11 +78,13 @@ class RoomRepository:
         flag_modified(game_state, "quest_results")
         flag_modified(game_state, "roles_config")
         flag_modified(game_state, "players")
+        flag_modified(game_state, "votes")
+        flag_modified(game_state, "quest_votes")
         db.session.commit()
         
         # Invalidate associated room cache
         if game_state.room:
-            redis_client.delete(f"{self.CACHE_PREFIX}{game_state.room.room_number}")
+            app_factory.redis_client.delete(f"{self.CACHE_PREFIX}{game_state.room.room_number}")
 
 # Singleton
 room_repo = RoomRepository()

@@ -46,11 +46,13 @@ class GameState(db.Model):
     quest_results = db.Column(JSON)    # Array of booleans/null
     roles_config = db.Column(JSON)     # Dict {openid: role}
     players = db.Column(JSON)          # List of openids in order
+    votes = db.Column(JSON)            # Dict {openid: vote_value}
+    quest_votes = db.Column(JSON)      # List of success/fail (unordered for secrecy)
 
 class GameHistory(db.Model):
     __tablename__ = 'game_history'
     
-    id = db.Column(db.BigInteger, primary_key=True)
+    id = db.Column(db.Integer, primary_key=True)
     room_id = db.Column(db.String(32))
     start_time = db.Column(db.DateTime)
     end_time = db.Column(db.DateTime, default=datetime.utcnow)
