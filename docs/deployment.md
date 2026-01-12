@@ -26,18 +26,43 @@
 
 ## Kubernetes 部署
 
-1. **构建镜像**
+本项目采用 Kustomize 管理 Kubernetes 配置。
+
+### 1. 准备工作
+
+1. **构建并推送镜像**
    ```bash
    docker build -t your-registry/avalon-server:latest .
    docker push your-registry/avalon-server:latest
    ```
 
-2. **应用配置 (Kustomize)**
+2. **配置生产环境 Secret**
+   复制示例 Secret 文件并填入真实数据：
    ```bash
-   kubectl apply -k k8s/overlays/prod
+   cp k8s/overlays/prod/secret.yaml.example k8s/overlays/prod/secret.yaml
+   # 编辑 k8s/overlays/prod/secret.yaml
    ```
 
+3. **配置 Ingress**
+   编辑 `k8s/overlays/prod/ingress.yaml`，修改域名为你的实际域名。
+
+### 2. 执行部署
+
+使用 Kustomize 应用配置：
+```bash
+kubectl apply -k k8s/overlays/prod
+```
+
+### 3. 验证状态
+
+```bash
+kubectl get pods -n default
+kubectl get svc -n default
+kubectl get ingress -n default
+```
+
 ## 生产环境注意事项
-1. **Redis 持久化**: 确保 Redis 开启 AOF 或 RDB，防止容器重启丢失游戏进度。
-2. **WeChat Whitelist**: 确保服务器 IP 已加入微信公众号后台的白名单。
-3. **HTTPS**: 微信强制要求 Webhook URL 为 HTTPS，需配置 Nginx + Let's Encrypt 或 Cloud Load Balancer。
+1. **持久化存储**: 默认配置使用了 PVC，请确保集群中已安装 StorageClass 提供程序（如 `local-path` 或云厂商提供的磁盘）。
+2. **微信白名单**: 确保 K8s 出口节点 IP 已加入微信后台 IP 白名单。
+3. **安全配置**: 所有 Deployment 均已设置 `automountServiceAccountToken: false` 以降低攻击面。
+4. **HTTPS**: Ingress 配置中已集成 `cert-manager` 注解，建议配合 `letsencrypt` 使用。

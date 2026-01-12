@@ -12,51 +12,27 @@
 
 ---
 
-## 🚀 快速启动
+## 🚀 部署指南
 
-### 1. 启动基础设施 (MySQL & Redis)
-推荐使用 Docker Compose 一键启动本地开发所需的数据库和缓存：
+### Docker Compose (本地/开发)
+推荐使用 Docker Compose 一键启动本地开发环境：
 ```bash
-docker-compose up -d
+docker-compose up -d --build
 ```
 
-### 2. 配置环境
-根据不同环境设置 `APP_ENV`（默认为 `dev`）。系统会自动加载对应的 `.env.{APP_ENV}` 文件：
-- **开发**: `export APP_ENV=dev` (使用本地 MySQL/Redis)
-- **测试**: `export APP_ENV=test` (使用内存 SQLite，运行测试会自动切换)
+### Kubernetes (生产环境)
+本项目支持基于 Kustomize 的 Kubernetes 部署方案，适用于生产环境。
 
-### 3. 安装依赖并运行
-```bash
-# 安装依赖
-./.venv/bin/pip install -r requirements.txt
-
-# 启动应用
-./.venv/bin/python main.py
-```
-
----
-
-## 🛠 技术深度
-
-- **MySQL-First 架构**: 所有游戏状态和用户信息持久化存储在 MySQL 中。
-- **Cache-Aside 策略**: 基于 Redis 的热点数据（房间、活跃游戏状态）自动缓存，提升读写响应速度。
-- **并发保护**: 引入 Version 乐观锁机制，防止多人同时投票导致的数据冲突。
-- **正则指令引擎**: 提供极简的指令解析，支持 `/join 1234` 或 `加入 1234` 等多种输入格式。
-
----
-
-## 🎮 指令交互指南
-
-| 指令类 | 示例 | 说明 |
-| :--- | :--- | :--- |
-| **房间管理** | `建房` | 创建 4 位数字唯一房间号 |
-| **加入游戏** | `加入 1024` | 进入指定房间 |
-| **状态查询** | `状态` | 查看当前房间人数、局次及角色阶段 |
-| **游戏开始** | `/start` | 房主启动游戏（需满足 5-10 人） |
-| **队长提议** | `/pick 1 3 5` | 队长提名本轮任务执行者 |
-| **全员投票** | `投票 赞成` | 对当前提议进行公开投票 |
-| **秘密任务** | `任务 成功` | 任务执行者决定任务结果 |
-| **刺客刺杀** | `刺杀 1` | 坏人阵营反败为胜的最后一击 |
+1. **准备 Secret**:
+   ```bash
+   cp k8s/overlays/prod/secret.yaml.example k8s/overlays/prod/secret.yaml
+   # 编辑 secret.yaml 填入真实配置
+   ```
+2. **执行部署**:
+   ```bash
+   kubectl apply -k k8s/overlays/prod
+   ```
+详细部署说明请参考 [部署文档](docs/deployment.md)。
 
 ---
 
@@ -73,6 +49,7 @@ docker-compose up -d
 - [x] **高阶角色支持**: 莫甘娜 (Morgana)、莫德雷德 (Mordred)、奥伯伦 (Oberon) 的视野逻辑与分配。
 - [x] **Quest 4 特殊规则**: 7 人及以上局第 4 轮需 2 张失败。
 - [x] **个人战绩中心**: 实现 `/profile` 指令，统计胜率及阵营分布。
+- [x] **生产级部署**: 基于 Kustomize 的 Kubernetes 部署方案及资源配额优化。
 - [x] 单元测试与集成测试（覆盖率 > 50%）。
 - [x] 战绩历史统计与归档流程。
 - [x] 房间清理机制（命令行指令：`flask cleanup-rooms`）。
@@ -83,7 +60,7 @@ docker-compose up -d
 
 ### 🔴 待办 (Todo)
 - [ ] 异步超时处理：当玩家长时间不投票时自动随机执行。
-- [ ] Kubernetes (Kustomize) 部署清单与 HPA 配置。
+- [ ] HPA (Horizontal Pod Autoscaler) 配置与压力测试。
 
 ---
 
@@ -96,5 +73,13 @@ pytest
 
 ---
 
-## 📄 开源协议
-MIT License
+## 🛠 开发环境配置
+项目根目录下包含多个环境配置文件：
+- `.env.dev`: 开发环境配置
+- `.env.test`: 测试环境配置
+- `.env.prod`: 生产环境配置模板
+
+---
+
+## 📄 开源项目
+本项目遵循 MIT 协议。
