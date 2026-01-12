@@ -8,6 +8,9 @@ db = SQLAlchemy()
 
 logger = get_logger(__name__)
 
+# Ensure models are imported for metadata
+from src.models import sql_models
+
 def create_app(config_override=None):
     setup_logging()
     
@@ -54,6 +57,10 @@ def create_app(config_override=None):
     app.register_blueprint(wechat_bp)
     app.register_blueprint(api_bp)
     
+    # Register Error Handlers
+    from src.extensions.error_handler import register_error_handlers
+    register_error_handlers(app)
+
     @app.route("/health")
     def health_check():
         return jsonify({"status": "ok"})
