@@ -1,5 +1,5 @@
 from typing import Optional
-from src import app_factory
+from src.extensions.redis_ext import redis_manager
 from src.app_factory import db
 from src.models.sql_models import Room, GameState
 from src.utils.json_utils import json_dumps, json_loads
@@ -22,7 +22,7 @@ class RoomRepository:
         cache_key = f"{self.CACHE_PREFIX}{room_number}"
         
         # 1. Try Redis Cache
-        cached_data = app_factory.redis_client.get(cache_key)
+        cached_data = redis_manager.client.get(cache_key)
         if cached_data:
             logger.debug(f"Cache HIT for room {room_number}")
             # Note: Complex to reconstruct SQLAlchemy object from simple JSON cache 
@@ -56,7 +56,7 @@ class RoomRepository:
             db.session.commit()
             
             # Invalidate Redis Cache
-            app_factory.redis_client.delete(f"{self.CACHE_PREFIX}{room.room_number}")
+            redis_manager.client.delete(f"{self.CACHE_PREFIX}{room.room_number}")
             logger.debug(f"Saved room {room.room_number} and invalidated cache")
         except Exception as e:
             db.session.rollback()
@@ -67,7 +67,7 @@ class RoomRepository:
         room_number = room.room_number
         db.session.delete(room)
         db.session.commit()
-        app_factory.redis_client.delete(f"{self.CACHE_PREFIX}{room_number}")
+        redis_manager.client.delete(f"{self.CACHE_PREFIX}{room_number}")
 
     def update_game_state(self, game_state: GameState) -> None:
         """
@@ -84,7 +84,7 @@ class RoomRepository:
         
         # Invalidate associated room cache
         if game_state.room:
-            app_factory.redis_client.delete(f"{self.CACHE_PREFIX}{game_state.room.room_number}")
+            redis_manager.client.delete(f"{self.CACHE_PREFIX}{game_state.room.room_number}")
 
 # Singleton
 room_repo = RoomRepository()

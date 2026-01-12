@@ -1,5 +1,5 @@
 from typing import Optional
-from src import app_factory
+from src.extensions.redis_ext import redis_manager
 from src.app_factory import db
 from src.models.sql_models import User
 from src.utils.logger import get_logger

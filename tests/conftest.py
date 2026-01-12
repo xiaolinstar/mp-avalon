@@ -12,7 +12,7 @@ def app():
     from unittest import mock
     
     # Mock redis_client before app creation
-    with mock.patch('src.app_factory.Redis.from_url') as mock_from_url:
+    with mock.patch('src.extensions.redis_ext.Redis.from_url') as mock_from_url:
         mock_redis = mock_from_url.return_value
         # Mock common methods
         mock_redis.get.return_value = None
