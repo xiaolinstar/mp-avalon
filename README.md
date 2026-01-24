@@ -15,23 +15,30 @@
 ## 🚀 部署指南
 
 ### Docker Compose (本地/开发)
+
 推荐使用 Docker Compose 一键启动本地开发环境：
+
 ```bash
 docker-compose up -d --build
 ```
 
 ### Kubernetes (生产环境)
+
 本项目支持基于 Kustomize 的 Kubernetes 部署方案，适用于生产环境。
 
 1. **准备 Secret**:
+
    ```bash
    cp k8s/overlays/prod/secret.yaml.example k8s/overlays/prod/secret.yaml
    # 编辑 secret.yaml 填入真实配置
    ```
+
 2. **执行部署**:
+
    ```bash
    kubectl apply -k k8s/overlays/prod
    ```
+
 详细部署说明请参考 [部署文档](docs/deployment.md)。
 
 ---
@@ -39,6 +46,7 @@ docker-compose up -d --build
 ## 📈 开发进度与路线图
 
 ### 🟢 已完成 (Done)
+
 - [x] 基于 Application Factory 的 Flask 后端框架。
 - [x] 微信消息签名验证及 XML 协议处理。
 - [x] 支持多参数的正则表达式指令解析器。
@@ -55,31 +63,40 @@ docker-compose up -d --build
 - [x] 房间清理机制（命令行指令：`flask cleanup-rooms`）。
 
 ### 🟡 进行中 (In Progress)
+
 - [ ] 工程健壮性建设：接入 Sentry 监控与 Flask-Migrate 数据库迁移。
 - [ ] 可观测性：引入 TraceID 处理微信 5s 回复限制下的日志追踪。
 
 ### 🔴 待办 (Todo)
+
 - [ ] 异步超时处理：当玩家长时间不投票时自动随机执行。
-- [ ] HPA (Horizontal Pod Autoscaler) 配置与压力测试。
+- [ ] HPA (Horizontal Pod Autoscaler) 配置 with 压力测试。
 
 ---
 
 ## 🧪 测试
+
 ```bash
 # 运行单元测试
 pytest
 ```
+
 目前指令解析器测试覆盖率已达 100%。
 
 ---
 
-## 🛠 开发环境配置
-项目根目录下包含多个环境配置文件：
-- `.env.dev`: 开发环境配置
-- `.env.test`: 测试环境配置
-- `.env.prod`: 生产环境配置模板
+## 🛠 配置与环境变量
+
+项目采用 Pydantic-Settings 统一管理配置，遵循 12-Factor App 原则。
+
+详细的最佳实践和加载优先级说明请参考：[环境变量最佳实践](docs/env_best_practices.md)
+
+- **.env.example**: 包含所有必备配置项的模板文件。
+- **本地开发**: 复制 `.env.example` 为 `.env` 并根据实际需求修改。
+- **生产环境**: 严禁将 `.env` 文件打包进镜像，应通过 Secret 管理工具注入。
 
 ---
 
-## 📄 开源项目
+## 📄 开源协议
+
 本项目遵循 MIT 协议。
