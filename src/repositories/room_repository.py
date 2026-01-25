@@ -10,6 +10,7 @@ from src.utils.logger import get_logger
 
 logger = get_logger(__name__)
 
+
 class RoomRepository:
     """
     Handles persistence for Room and GameState.
@@ -22,7 +23,7 @@ class RoomRepository:
 
     def get_by_number(self, room_number: str) -> Room | None:
         cache_key = f"{self.CACHE_PREFIX}{room_number}"
-        
+
         # 1. Try Redis Cache
         try:
             cached_data = redis_manager.client.get(cache_key)
@@ -43,7 +44,7 @@ class RoomRepository:
             except Exception as e:
                 logger.warning(f"Failed to set cache for room {room_number}: {e}")
             return room
-        
+
         return None
 
     def save(self, room: Room) -> None:
@@ -59,7 +60,7 @@ class RoomRepository:
                 room.version += 1
             db.session.add(room)
             db.session.commit()
-            
+
             # Invalidate Redis Cache
             try:
                 redis_manager.client.delete(f"{self.CACHE_PREFIX}{room.room_number}")
@@ -93,7 +94,7 @@ class RoomRepository:
         flag_modified(game_state, "votes")
         flag_modified(game_state, "quest_votes")
         db.session.commit()
-        
+
         # Invalidate associated room cache
         if game_state.room:
             try:
@@ -113,7 +114,7 @@ class RoomRepository:
             "updated_at": room.updated_at.isoformat() if room.updated_at else None,
             "version": room.version,
         }
-        
+
         # Serialize GameState if exists
         if room.game_state:
             room_data["game_state"] = {
@@ -130,18 +131,18 @@ class RoomRepository:
                 "votes": room.game_state.votes,
                 "quest_votes": room.game_state.quest_votes,
             }
-        
+
         return room_data
 
     def _deserialize_room(self, cached_data: str) -> Room | None:
         """Deserialize cached JSON dict back to Room object."""
         try:
             from datetime import datetime
-            
+
             data = json_loads(cached_data)
             if not data:
                 return None
-            
+
             # Create Room object without SQLAlchemy session
             room = Room(
                 id=data.get("id"),
@@ -150,13 +151,13 @@ class RoomRepository:
                 status=data.get("status"),
                 version=data.get("version", 1),
             )
-            
+
             # Parse datetime fields
             if data.get("created_at"):
                 room.created_at = datetime.fromisoformat(data["created_at"])
             if data.get("updated_at"):
                 room.updated_at = datetime.fromisoformat(data["updated_at"])
-            
+
             # Create GameState if exists
             game_state_data = data.get("game_state")
             if game_state_data:
@@ -175,7 +176,7 @@ class RoomRepository:
                     quest_votes=game_state_data.get("quest_votes", []),
                 )
                 room.game_state = game_state
-            
+
             return room
         except Exception as e:
             logger.error(f"Failed to deserialize room from cache: {e}")
@@ -185,12 +186,9 @@ class RoomRepository:
         """Set room in Redis cache."""
         cache_key = f"{self.CACHE_PREFIX}{room.room_number}"
         room_data = self._serialize_room(room)
-        redis_manager.client.setex(
-            cache_key,
-            self.CACHE_TTL,
-            json_dumps(room_data)
-        )
+        redis_manager.client.setex(cache_key, self.CACHE_TTL, json_dumps(room_data))
         logger.debug(f"Cache SET for room {room.room_number}")
+
 
 # Singleton
 room_repo = RoomRepository()

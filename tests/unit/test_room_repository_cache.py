@@ -1,4 +1,5 @@
 """测试 RoomRepository 的 Redis 缓存功能"""
+
 from datetime import UTC, datetime
 from unittest.mock import Mock, patch
 
@@ -24,7 +25,7 @@ def mock_room():
         status="WAITING",
         version=1,
         created_at=datetime.now(UTC),
-        updated_at=datetime.now(UTC)
+        updated_at=datetime.now(UTC),
     )
 
     game_state = GameState(
@@ -39,7 +40,7 @@ def mock_room():
         roles_config={},
         players=["user1"],
         votes={},
-        quest_votes=[]
+        quest_votes=[],
     )
     room.game_state = game_state
 
@@ -49,7 +50,7 @@ def mock_room():
 class TestRedisCacheAside:
     """测试 Cache-Aside 策略"""
 
-    @patch('src.repositories.room_repository.redis_manager')
+    @patch("src.repositories.room_repository.redis_manager")
     def test_cache_hit_returns_deserialized_room(self, mock_redis, room_repo_instance):
         """测试缓存命中时从 Redis 返回反序列化的对象"""
         # Mock Redis 缓存命中
@@ -66,8 +67,8 @@ class TestRedisCacheAside:
         assert result.game_state is not None
         assert result.game_state.phase == "WAITING"
 
-    @patch('src.repositories.room_repository.redis_manager')
-    @patch('src.repositories.room_repository.Room')
+    @patch("src.repositories.room_repository.redis_manager")
+    @patch("src.repositories.room_repository.Room")
     def test_cache_miss_fetches_from_db_and_sets_cache(self, mock_room_model, mock_redis, room_repo_instance, mock_room):
         """测试缓存未命中时从 DB 读取并回填缓存"""
         # Mock Redis 缓存未命中
@@ -89,8 +90,8 @@ class TestRedisCacheAside:
         # 验证返回了正确的对象
         assert result == mock_room
 
-    @patch('src.repositories.room_repository.redis_manager')
-    @patch('src.repositories.room_repository.Room')
+    @patch("src.repositories.room_repository.redis_manager")
+    @patch("src.repositories.room_repository.Room")
     def test_redis_error_falls_back_to_db(self, mock_room_model, mock_redis, room_repo_instance, mock_room):
         """测试 Redis 不可用时降级到 DB"""
         # Mock Redis 抛出异常
@@ -105,32 +106,32 @@ class TestRedisCacheAside:
         mock_room_model.query.filter_by.assert_called_once_with(room_number="1234")
         # 缓存设置可能失败，但不影响主流程
 
-    @patch('src.repositories.room_repository.redis_manager')
+    @patch("src.repositories.room_repository.redis_manager")
     def test_save_invalidates_cache(self, mock_redis, room_repo_instance):
         """测试保存房间时失效缓存"""
         mock_room = Mock()
         mock_room.room_number = "1234"
         mock_room.version = 1
 
-        with patch('src.repositories.room_repository.db'):
+        with patch("src.repositories.room_repository.db"):
             room_repo_instance.save(mock_room)
 
             # 验证缓存被删除
             mock_redis.client.delete.assert_called_once_with("cache:room:1234")
 
-    @patch('src.repositories.room_repository.redis_manager')
+    @patch("src.repositories.room_repository.redis_manager")
     def test_delete_invalidates_cache(self, mock_redis, room_repo_instance):
         """测试删除房间时失效缓存"""
         mock_room = Mock()
         mock_room.room_number = "1234"
 
-        with patch('src.repositories.room_repository.db'):
+        with patch("src.repositories.room_repository.db"):
             room_repo_instance.delete(mock_room)
 
             # 验证缓存被删除
             mock_redis.client.delete.assert_called_once_with("cache:room:1234")
 
-    @patch('src.repositories.room_repository.redis_manager')
+    @patch("src.repositories.room_repository.redis_manager")
     def test_update_game_state_invalidates_cache(self, mock_redis, room_repo_instance):
         """测试更新游戏状态时失效缓存"""
         mock_game_state = Mock()
@@ -138,8 +139,8 @@ class TestRedisCacheAside:
         mock_room.room_number = "1234"
         mock_game_state.room = mock_room
 
-        with patch('src.repositories.room_repository.db'):
-            with patch('src.repositories.room_repository.flag_modified'):
+        with patch("src.repositories.room_repository.db"):
+            with patch("src.repositories.room_repository.flag_modified"):
                 room_repo_instance.update_game_state(mock_game_state)
 
                 # 验证缓存被删除

@@ -9,6 +9,7 @@ from src.utils.logger import get_logger
 wechat_bp = Blueprint("wechat", __name__)
 logger = get_logger(__name__)
 
+
 @wechat_bp.route("/", methods=["GET", "POST"])
 def wechat():
     signature = request.args.get("signature", "")
@@ -29,22 +30,22 @@ def wechat():
     msg = parse_message(request.data)
     # Store message in g for global error handler access
     g.wechat_msg = msg
-    
-    if msg.type == 'text':
+
+    if msg.type == "text":
         openid = msg.source
         content = msg.content
         logger.info(f"Received text message from {openid}: {content}")
-        
+
         from src.repositories.user_repository import user_repo
-        from src.wechat.parser import parser
         from src.wechat.handlers import dispatcher
+        from src.wechat.parser import parser
 
         # 1. Ensure user exists
         user_repo.create_or_update(openid)
 
         # 2. Parse Command
         cmd = parser.parse(content, openid)
-        
+
         # 3. Handle Command via Strategy Pattern
         reply_text = dispatcher.dispatch(cmd)
 

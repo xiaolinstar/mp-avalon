@@ -19,6 +19,7 @@ class CommandType(Enum):
     HELP = "help"
     UNKNOWN = "unknown"
 
+
 class Command(BaseModel):
     command_type: CommandType
     args: list[str] = []

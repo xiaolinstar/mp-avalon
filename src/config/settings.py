@@ -1,9 +1,8 @@
 from __future__ import annotations
 
 import os
-from typing import Optional
 
-from pydantic import SecretStr, Field
+from pydantic import Field, SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -17,7 +16,7 @@ class Settings(BaseSettings):
     FLASK_DEBUG: bool = True
 
     # WeChat
-    # These are mandatory in non-test environments. 
+    # These are mandatory in non-test environments.
     # Using Optional here but logic in __init__ can enforce presence if not in test.
     WECHAT_TOKEN: SecretStr = Field(default="")
     WECHAT_APPID: str = Field(default="")
@@ -32,8 +31,8 @@ class Settings(BaseSettings):
     # Logging
     LOG_LEVEL: str = "INFO"
     LOG_FORMAT: str = "TEXT"  # TEXT or JSON
-    LOG_FILE: Optional[str] = None
-    SENTRY_DSN: Optional[str] = None
+    LOG_FILE: str | None = None
+    SENTRY_DSN: str | None = None
 
     model_config = SettingsConfigDict(
         # Load .env first, then environment variables will override
@@ -44,11 +43,11 @@ class Settings(BaseSettings):
 
     def __init__(self, **values):
         super().__init__(**values)
-        
+
         # 1. Handle test environment database
         if self.APP_ENV == "test" and "DATABASE_URL" not in os.environ:
             self.DATABASE_URL = "sqlite:///:memory:"
-        
+
         # 2. Fail-Fast for production environment
         if self.APP_ENV == "prod":
             self.validate_production_settings()
@@ -57,7 +56,7 @@ class Settings(BaseSettings):
         """Ensure critical settings are provided in production."""
         if self.SECRET_KEY.get_secret_value() == "dev-key":
             raise ValueError("SECRET_KEY must be changed in production!")
-        
+
         if not self.WECHAT_APPID or not self.WECHAT_TOKEN.get_secret_value():
             raise ValueError("WeChat configuration is mandatory in production!")
 

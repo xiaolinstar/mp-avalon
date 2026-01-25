@@ -9,8 +9,10 @@ class EnhancedJSONEncoder(json.JSONEncoder):
             return obj.isoformat()
         return super().default(obj)
 
+
 def json_dumps(data: Any) -> str:
     return json.dumps(data, cls=EnhancedJSONEncoder)
+
 
 def json_loads(data: str) -> Any:
     if not data:

@@ -8,21 +8,22 @@
     python scripts/cleanup_rooms.py --stats     # 只查看统计
     python scripts/cleanup_rooms.py --dry-run    # 模拟运行（不删除）
 """
+
 import argparse
 import os
 import sys
 
 # 添加项目根目录到Python路径
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from src.app_factory import create_app
 from src.services.cleanup_service import cleanup_service
 
 
 def main():
-    parser = argparse.ArgumentParser(description='清理过期房间')
-    parser.add_argument('--stats', action='store_true', help='只显示统计信息，不执行清理')
-    parser.add_argument('--dry-run', action='store_true', help='模拟运行，不实际删除')
+    parser = argparse.ArgumentParser(description="清理过期房间")
+    parser.add_argument("--stats", action="store_true", help="只显示统计信息，不执行清理")
+    parser.add_argument("--dry-run", action="store_true", help="模拟运行，不实际删除")
 
     args = parser.parse_args()
 
@@ -72,7 +73,7 @@ def main():
         # 显示清理结果
         print("\n清理结果:")
         for key, value in cleanup_result.items():
-            if key != 'total' and value > 0:
+            if key != "total" and value > 0:
                 print(f"  {key:20s}: {value}")
 
         print(f"\n总计清理: {cleanup_result['total']} 个房间")
@@ -90,5 +91,5 @@ def main():
         return 0
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     sys.exit(main())

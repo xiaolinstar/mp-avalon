@@ -11,11 +11,14 @@ class BaseGameException(Exception):
     def __str__(self):
         return f"[{self.error_code}] {self.message}"
 
+
 class DomainException(BaseGameException):
     pass
 
+
 class InfrastructureException(BaseGameException):
     pass
+
 
 class ValidationException(BaseGameException):
     pass

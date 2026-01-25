@@ -1,4 +1,5 @@
 """定时清理服务 - 自动清理过期房间"""
+
 from datetime import UTC, datetime, timedelta
 
 from src.models.sql_models import Room, User
@@ -13,11 +14,11 @@ class CleanupService:
 
     # 清理策略配置（小时）
     CLEANUP_POLICIES = {
-        'ENDED': 168,           # 已结束房间：7天后清理 (7 * 24 = 168小时)
-        'WAITING_EMPTY': 1,     # 等待中无玩家：1小时后清理
-        'WAITING_STALLED': 24,  # 等待中有玩家但长时间未开始：24小时后清理
-        'PLAYING_STALLED': 72,  # 游戏中异常长时间：3天后清理 (可能是卡住的房间)
-        'ORPHANED': 0,          # 孤儿房间（无玩家）：立即清理
+        "ENDED": 168,  # 已结束房间：7天后清理 (7 * 24 = 168小时)
+        "WAITING_EMPTY": 1,  # 等待中无玩家：1小时后清理
+        "WAITING_STALLED": 24,  # 等待中有玩家但长时间未开始：24小时后清理
+        "PLAYING_STALLED": 72,  # 游戏中异常长时间：3天后清理 (可能是卡住的房间)
+        "ORPHANED": 0,  # 孤儿房间（无玩家）：立即清理
     }
 
     def cleanup_expired_rooms(self) -> dict[str, int]:
@@ -27,33 +28,33 @@ class CleanupService:
             Dict[str, int]: 按状态分类的清理数量
         """
         stats = {
-            'total': 0,
-            'ENDED': 0,
-            'WAITING': 0,
-            'PLAYING': 0,
-            'ORPHANED': 0,
+            "total": 0,
+            "ENDED": 0,
+            "WAITING": 0,
+            "PLAYING": 0,
+            "ORPHANED": 0,
         }
 
         try:
             # 1. 清理已结束超过7天的房间
             ended_count = self._cleanup_ended_rooms()
-            stats['ENDED'] = ended_count
-            stats['total'] += ended_count
+            stats["ENDED"] = ended_count
+            stats["total"] += ended_count
 
             # 2. 清理等待中的房间（无玩家或长时间未开始）
             waiting_count = self._cleanup_waiting_rooms()
-            stats['WAITING'] = waiting_count
-            stats['total'] += waiting_count
+            stats["WAITING"] = waiting_count
+            stats["total"] += waiting_count
 
             # 3. 清理异常的游戏中房间（超过3天未更新）
             playing_count = self._cleanup_stalled_playing_rooms()
-            stats['PLAYING'] = playing_count
-            stats['total'] += playing_count
+            stats["PLAYING"] = playing_count
+            stats["total"] += playing_count
 
             # 4. 清理孤儿房间（无玩家关联的房间）
             orphaned_count = self._cleanup_orphaned_rooms()
-            stats['ORPHANED'] = orphaned_count
-            stats['total'] += orphaned_count
+            stats["ORPHANED"] = orphaned_count
+            stats["total"] += orphaned_count
 
             logger.info(f"Cleanup completed: {stats}")
             return stats
@@ -64,11 +65,8 @@ class CleanupService:
 
     def _cleanup_ended_rooms(self) -> int:
         """清理已结束超过7天的房间"""
-        threshold = datetime.now(UTC).replace(tzinfo=None) - timedelta(hours=self.CLEANUP_POLICIES['ENDED'])
-        rooms = Room.query.filter(
-            Room.status == 'ENDED',
-            Room.updated_at < threshold
-        ).all()
+        threshold = datetime.now(UTC).replace(tzinfo=None) - timedelta(hours=self.CLEANUP_POLICIES["ENDED"])
+        rooms = Room.query.filter(Room.status == "ENDED", Room.updated_at < threshold).all()
 
         count = 0
         for room in rooms:
@@ -86,7 +84,7 @@ class CleanupService:
         now = datetime.now(UTC).replace(tzinfo=None)
 
         # 获取所有等待中的房间
-        rooms = Room.query.filter_by(status='WAITING').all()
+        rooms = Room.query.filter_by(status="WAITING").all()
 
         for room in rooms:
             # 检查是否有玩家
@@ -94,14 +92,14 @@ class CleanupService:
 
             if not players or len(players) == 0:
                 # 无玩家房间：1小时后清理
-                threshold = now - timedelta(hours=self.CLEANUP_POLICIES['WAITING_EMPTY'])
+                threshold = now - timedelta(hours=self.CLEANUP_POLICIES["WAITING_EMPTY"])
                 if room.updated_at < threshold:
                     if self._delete_room_safely(room):
                         count += 1
                         logger.debug(f"Cleaned empty WAITING room {room.room_number}")
             else:
                 # 有玩家但长时间未开始：24小时后清理
-                threshold = now - timedelta(hours=self.CLEANUP_POLICIES['WAITING_STALLED'])
+                threshold = now - timedelta(hours=self.CLEANUP_POLICIES["WAITING_STALLED"])
                 if room.updated_at < threshold:
                     if self._delete_room_safely(room):
                         count += 1
@@ -114,11 +112,8 @@ class CleanupService:
 
     def _cleanup_stalled_playing_rooms(self) -> int:
         """清理异常长时间未更新的游戏中房间"""
-        threshold = datetime.now(UTC).replace(tzinfo=None) - timedelta(hours=self.CLEANUP_POLICIES['PLAYING_STALLED'])
-        rooms = Room.query.filter(
-            Room.status == 'PLAYING',
-            Room.updated_at < threshold
-        ).all()
+        threshold = datetime.now(UTC).replace(tzinfo=None) - timedelta(hours=self.CLEANUP_POLICIES["PLAYING_STALLED"])
+        rooms = Room.query.filter(Room.status == "PLAYING", Room.updated_at < threshold).all()
 
         count = 0
         for room in rooms:
@@ -127,8 +122,7 @@ class CleanupService:
                 if self._delete_room_safely(room):
                     count += 1
                     logger.warning(
-                        f"Cleaned stalled PLAYING room {room.room_number} "
-                        f"(phase: {room.game_state.phase}, last_update: {room.updated_at})"
+                        f"Cleaned stalled PLAYING room {room.room_number} (phase: {room.game_state.phase}, last_update: {room.updated_at})"
                     )
 
         if count > 0:
@@ -179,18 +173,18 @@ class CleanupService:
         """获取当前房间统计信息"""
         try:
             stats = {
-                'total': 0,
-                'WAITING': 0,
-                'PLAYING': 0,
-                'ENDED': 0,
-                'orphaned': 0,
+                "total": 0,
+                "WAITING": 0,
+                "PLAYING": 0,
+                "ENDED": 0,
+                "orphaned": 0,
             }
 
             # 统计各状态房间数
-            stats['total'] = Room.query.count()
-            stats['WAITING'] = Room.query.filter_by(status='WAITING').count()
-            stats['PLAYING'] = Room.query.filter_by(status='PLAYING').count()
-            stats['ENDED'] = Room.query.filter_by(status='ENDED').count()
+            stats["total"] = Room.query.count()
+            stats["WAITING"] = Room.query.filter_by(status="WAITING").count()
+            stats["PLAYING"] = Room.query.filter_by(status="PLAYING").count()
+            stats["ENDED"] = Room.query.filter_by(status="ENDED").count()
 
             # 统计孤儿房间
             orphaned_count = 0
@@ -198,7 +192,7 @@ class CleanupService:
                 player_count = User.query.filter_by(current_room_id=room.id).count()
                 if player_count == 0:
                     orphaned_count += 1
-            stats['orphaned'] = orphaned_count
+            stats["orphaned"] = orphaned_count
 
             logger.info(f"Room statistics: {stats}")
             return stats

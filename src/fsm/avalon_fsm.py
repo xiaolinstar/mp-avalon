@@ -9,12 +9,13 @@ class GamePhase(Enum):
     ASSASSINATION = "ASSASSINATION"
     GAME_OVER = "GAME_OVER"
 
+
 class AvalonFSM:
     """
     Core Logic for Avalon Game state transitions.
     This class is pure logic and doesn't handle persistence directly.
     """
-    
+
     @staticmethod
     def get_role_distribution(player_count: int) -> dict[str, int]:
         # Standard Avalon distribution (Good vs Evil)
@@ -24,14 +25,7 @@ class AvalonFSM:
         # 8 players: 5 Good, 3 Evil
         # 9 players: 6 Good, 3 Evil
         # 10 players: 6 Good, 4 Evil
-        dist = {
-            5: (3, 2),
-            6: (4, 2),
-            7: (4, 3),
-            8: (5, 3),
-            9: (6, 3),
-            10: (6, 4)
-        }
+        dist = {5: (3, 2), 6: (4, 2), 7: (4, 3), 8: (5, 3), 9: (6, 3), 10: (6, 4)}
         return dist.get(player_count, (3, 2))
 
     @staticmethod
@@ -41,10 +35,10 @@ class AvalonFSM:
         matrix = {
             5: [2, 3, 2, 3, 3],
             6: [2, 3, 4, 3, 4],
-            7: [2, 3, 3, 4, 4], # Quest 4 needs 2 fails for Evil to win if >7 players
+            7: [2, 3, 3, 4, 4],  # Quest 4 needs 2 fails for Evil to win if >7 players
             8: [3, 4, 4, 5, 5],
             9: [3, 4, 4, 5, 5],
-            10: [3, 4, 4, 5, 5]
+            10: [3, 4, 4, 5, 5],
         }
         return matrix[player_count][round_num - 1]
 
@@ -53,8 +47,16 @@ class AvalonFSM:
         allowed = {
             "WAITING": [GamePhase.TEAM_SELECTION],
             "TEAM_SELECTION": [GamePhase.TEAM_VOTE],
-            "TEAM_VOTE": [GamePhase.QUEST_PERFORM, GamePhase.TEAM_SELECTION, GamePhase.GAME_OVER],
-            "QUEST_PERFORM": [GamePhase.TEAM_SELECTION, GamePhase.ASSASSINATION, GamePhase.GAME_OVER],
-            "ASSASSINATION": [GamePhase.GAME_OVER]
+            "TEAM_VOTE": [
+                GamePhase.QUEST_PERFORM,
+                GamePhase.TEAM_SELECTION,
+                GamePhase.GAME_OVER,
+            ],
+            "QUEST_PERFORM": [
+                GamePhase.TEAM_SELECTION,
+                GamePhase.ASSASSINATION,
+                GamePhase.GAME_OVER,
+            ],
+            "ASSASSINATION": [GamePhase.GAME_OVER],
         }
         return target_phase in allowed.get(current_phase, [])
