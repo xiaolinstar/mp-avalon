@@ -1,6 +1,7 @@
 # 部署文档
 
 ## 环境要求
+
 - Docker Engine 24+
 - Docker Compose v2.0+
 - Python 3.11+ (本地开发)
@@ -20,7 +21,7 @@
 
 3. **验证服务**
    ```bash
-   curl http://localhost:8000/health
+   curl http://localhost/health
    # 应返回 {"status": "ok"}
    ```
 
@@ -62,6 +63,7 @@ kubectl get ingress -n default
 ```
 
 ## 生产环境注意事项
+
 1. **持久化存储**: 默认配置使用了 PVC，请确保集群中已安装 StorageClass 提供程序（如 `local-path` 或云厂商提供的磁盘）。
 2. **微信白名单**: 确保 K8s 出口节点 IP 已加入微信后台 IP 白名单。
 3. **安全配置**: 所有 Deployment 均已设置 `automountServiceAccountToken: false` 以降低攻击面。
