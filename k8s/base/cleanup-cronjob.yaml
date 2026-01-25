@@ -13,13 +13,13 @@ spec:
   failedJobsHistoryLimit: 3
   # 成功任务保留策略：保留最近1次成功记录
   successfulJobsHistoryLimit: 1
-  # 任务超时时间：1小时
-  activeDeadlineSeconds: 3600
   # 如果错过调度，在之后多久内仍然执行（避免永久跳过）
   startingDeadlineSeconds: 300
 
   jobTemplate:
     spec:
+      # 任务超时时间：1小时
+      activeDeadlineSeconds: 3600
       backoffLimit: 3  # 失败重试3次
       template:
         spec:

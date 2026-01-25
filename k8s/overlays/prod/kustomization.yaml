@@ -2,10 +2,11 @@ resources:
   - ../../base
   - patch-envs.yaml
   - ingress.yaml
+  - secret.yaml
 
 # Replicas can be adjusted here if needed
 # images can be updated here
 images:
   - name: avalon-server
-    newName: your-registry/avalon-server
+    newName: ghcr.io/xiaolinstar/mp-avalon
     newTag: latest
