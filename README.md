@@ -1,7 +1,7 @@
 # Mini-Avalon: 微信公众号阿瓦隆桌游后端
 
 ![Game Stage](https://img.shields.io/badge/Stage-Development-orange)
-![Python](https://img.shields.io/badge/Python-3.13+-blue)
+![Python](https://img.shields.io/badge/Python-3.11+-blue)
 ![Architecture](https://img.shields.io/badge/Architecture-DDD--Layered-green)
 
 ## 🌟 项目简介

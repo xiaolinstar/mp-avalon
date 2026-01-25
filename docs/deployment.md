@@ -3,7 +3,7 @@
 ## 环境要求
 - Docker Engine 24+
 - Docker Compose v2.0+
-- Python 3.13+ (本地开发)
+- Python 3.11+ (本地开发)
 
 ## 快速启动 (Docker Compose)
 

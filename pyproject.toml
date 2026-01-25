@@ -1,6 +1,6 @@
 [tool.ruff]
 # 目标 Python 版本
-target-version = "py313"
+target-version = "py311"
 # 行长度限制
 line-length = 150
 
