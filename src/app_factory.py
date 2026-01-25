@@ -44,7 +44,7 @@ def create_app(config_override=None):
     migrate.init_app(app, db)
     
     # Import models to register them with SQLAlchemy
-    from src import models
+    from src import models  # noqa: F401
 
     # 快速失败自检：MySQL
     with app.app_context():
