@@ -3,7 +3,7 @@ import string
 from datetime import UTC
 
 from src.app_factory import db
-from src.exceptions.room import RoomFullError, RoomNotFoundError, RoomStateError
+from src.exceptions.biz.room_exceptions import RoomFullError, RoomNotFoundError, RoomStateError
 from src.models.sql_models import GameState, Room, User
 from src.repositories.room_repository import room_repo
 from src.repositories.user_repository import user_repo

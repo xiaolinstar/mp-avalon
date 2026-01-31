@@ -1,7 +1,7 @@
 import random
 from datetime import UTC, datetime
 
-from src.exceptions.room import RoomStateError
+from src.exceptions.biz.room_exceptions import RoomStateError
 from src.fsm.avalon_fsm import AvalonFSM, GamePhase
 from src.repositories.room_repository import room_repo
 from src.repositories.user_repository import user_repo

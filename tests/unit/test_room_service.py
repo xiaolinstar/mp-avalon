@@ -2,7 +2,7 @@ from datetime import UTC
 
 import pytest
 
-from src.exceptions.room import RoomFullError, RoomNotFoundError
+from src.exceptions.biz.room_exceptions import RoomFullError, RoomNotFoundError
 from src.repositories.user_repository import user_repo
 from src.services.room_service import room_service
 

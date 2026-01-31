@@ -1,19 +1,18 @@
 from .base import (
-    BaseGameException,
-    DomainException,
-    InfrastructureException,
-    ValidationException,
+    AppException,
+    ClientException,
+    BizException,
+    ServerException,
 )
-from .game import GameException, InvalidPhaseError, NotLeaderError, PlayerNotInGameError
-from .infrastructure import DatabaseError, RedisConnectionError
-from .room import RoomException, RoomFullError, RoomNotFoundError, RoomStateError
-from .validation import InvalidCommandError, ParamValidationError
+from .client import *
+from .server import *
+from .biz import *
 
 __all__ = [
-    "BaseGameException",
-    "DomainException",
-    "InfrastructureException",
-    "ValidationException",
+    "AppException",
+    "ClientException",
+    "BizException",
+    "ServerException",
     "GameException",
     "NotLeaderError",
     "InvalidPhaseError",

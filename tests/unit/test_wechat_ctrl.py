@@ -77,10 +77,10 @@ def test_wechat_error_handler(client):
         <Content><![CDATA[建房]]></Content>
     </xml>
     """
-    from src.exceptions.room import RoomException
+    from src.exceptions.biz.room_exceptions import RoomException
 
     with patch("src.controllers.wechat_ctrl.check_signature", return_value=True):
-        # Mock room_service.create_room to raise a DomainException
+        # Mock room_service.create_room to raise a BizException
         with patch(
             "src.services.room_service.room_service.create_room",
             side_effect=RoomException(message="测试异常", error_code="TEST-001"),
