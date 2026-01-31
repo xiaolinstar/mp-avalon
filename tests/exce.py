@@ -1,6 +1,4 @@
-# -*- coding: utf-8 -*-
 import logging
-
 
 # *************************************************
 # @Time         : 2026/1/31 14:05
@@ -29,7 +27,7 @@ def handle_exception(exc_type, exc_value, exc_traceback):
         logging.error("未处理异常", exc_info=(exc_type, exc_value, exc_traceback))
 try:
     int("abc")
-except ValueError as e1:
+except ValueError:
     raise RuntimeError("处理失败")  # ← e1自动存入__context__
 
 print("进程结束")

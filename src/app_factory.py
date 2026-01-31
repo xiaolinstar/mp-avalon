@@ -103,6 +103,7 @@ def create_app(config_override=None):
     @app.route("/health")
     def health_check():
         from sqlalchemy import text
+
         from src.extensions.redis_ext import redis_manager
         
         health_status = {

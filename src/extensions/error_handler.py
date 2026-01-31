@@ -1,6 +1,6 @@
 from flask import g, jsonify, make_response
 
-from src.exceptions.base import AppException, ClientException, BizException, ServerException
+from src.exceptions.base import AppException, BizException, ClientException, ServerException
 from src.utils.logger import get_logger
 
 logger = get_logger(__name__)
