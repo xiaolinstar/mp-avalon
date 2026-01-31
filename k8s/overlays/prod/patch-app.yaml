@@ -3,6 +3,9 @@ kind: Deployment
 metadata:
   name: app-server
 spec:
+  selector:
+    matchLabels:
+      app: app-server
   template:
     spec:
       containers:

@@ -102,7 +102,39 @@ def create_app(config_override=None):
 
     @app.route("/health")
     def health_check():
-        return jsonify({"status": "ok"})
+        from sqlalchemy import text
+        from src.extensions.redis_ext import redis_manager
+        
+        health_status = {
+            "status": "healthy",
+            "checks": {
+                "database": "unknown",
+                "redis": "unknown"
+            }
+        }
+        
+        # Check Database
+        try:
+            db.session.execute(text("SELECT 1"))
+            health_status["checks"]["database"] = "ok"
+        except Exception as e:
+            logger.error(f"Health check: Database connection failed: {e}")
+            health_status["checks"]["database"] = f"error: {str(e)}"
+            health_status["status"] = "unhealthy"
+
+        # Check Redis
+        try:
+            if redis_manager.client.ping():
+                health_status["checks"]["redis"] = "ok"
+            else:
+                health_status["checks"]["redis"] = "failed"
+                health_status["status"] = "unhealthy"
+        except Exception as e:
+            logger.error(f"Health check: Redis connection failed: {e}")
+            health_status["checks"]["redis"] = f"error: {str(e)}"
+            health_status["status"] = "unhealthy"
+
+        return jsonify(health_status), 200 if health_status["status"] == "healthy" else 503
 
     # 启动超时检测后台任务
     def _start_timeout_checker():
