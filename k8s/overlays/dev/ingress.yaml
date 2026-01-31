@@ -4,7 +4,7 @@ metadata:
   name: app-ingress
   annotations:
     cert-manager.io/cluster-issuer: "letsencrypt-prod"
-    nginx.ingress.kubernetes.io/ssl-redirect: "true" # 必须使用 https
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
 spec:
   ingressClassName: nginx
   tls:
@@ -12,16 +12,6 @@ spec:
         - xiaolin.fun
       secretName: avalon-tls
   rules:
-    - host: xiaolin.fun
-      http:
-        paths:
-          - path: /
-            pathType: Prefix
-            backend:
-              service:
-                name: app-service
-                port:
-                  number: 80
     - host: localhost
       http:
         paths:

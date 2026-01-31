@@ -1,0 +1,16 @@
+resources:
+  - ../../base
+  - ../prod/patch-envs.yaml
+  - ../prod/secret.yaml
+  - ingress.yaml
+
+
+patches:
+  - path: ../prod/patch-app.yaml
+
+# Replicas can be adjusted here if needed
+# images can be updated here
+images:
+  - name: avalon-server
+    newName: ghcr.io/xiaolinstar/mp-avalon
+    newTag: latest
